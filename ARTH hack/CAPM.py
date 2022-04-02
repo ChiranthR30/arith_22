@@ -2,11 +2,63 @@ import numpy as np
 import pandas as pd
 import yfinance as yf
 import matplotlib.pyplot as plt
-
+import plotly.express as px
+import seaborn as sns
+from scipy import stats
+import plotly.figure_factory as ff
+import plotly.graph_objects as go
 
 RISK_FREE_RATE = 0.05
 
 MONTHS_IN_YEAR = 12
+
+ASIANPAINT = pd.read_csv("D:\VScode\Python\ARTH hack\\asianpaints.csv")
+HDFC_bank = pd.read_csv("D:\VScode\Python\ARTH hack\\HDFC.csv")
+prakash = pd.read_csv("D:\VScode\Python\ARTH hack\\prakash.csv")
+nifty = pd.read_csv("D:\VScode\Python\ARTH hack\\^NSEI.csv")
+ASIANPAINT = ASIANPAINT[["Date", "Adj Close"]]
+HDFC_bank = HDFC_bank[["Date", "Adj Close"]]
+prakash = prakash[["Date", "Adj Close"]]
+nifty = nifty[["Date", "Adj Close"]]
+ASIANPAINT.rename(columns={"Adj Close": "ASIANPAINT"}, inplace = True)
+HDFC_bank.rename(columns={"Adj Close": "HDFC_bank"}, inplace = True)
+prakash.rename(columns={"Adj Close": "prakash"}, inplace = True)
+nifty.rename(columns={"Adj Close": "nifty"}, inplace= True)
+stocks_df = pd.concat([ASIANPAINT, HDFC_bank.drop(columns=["Date"]), prakash.drop(columns=["Date"]), nifty.drop(columns=["Date"])], axis = 1)
+stocks_df = stocks_df.sort_values(by = ['Date'])
+stocks_df.head(5)
+
+
+def normalize_stocks(df):
+    df_ = df.copy() 
+    for stock in df_.columns[1:]:
+        df_[stock] = df_[stock] / df_.loc[0, stock]
+    return df_
+norm_stocks_df = normalize_stocks(stocks_df)
+norm_stocks_df.head(5)
+
+fig = px.line(title = "Normalized stock prices")
+ 
+
+for stock in norm_stocks_df.columns[1:]:
+    fig.add_scatter(x = norm_stocks_df["Date"], y = norm_stocks_df[stock], name = stock)
+fig.show()
+
+
+def daily_return_estimator(df):
+    df_daily_return = df.copy()
+    for i in df.columns[1:]:
+        for j in range(1, len(df)):
+            df_daily_return[i][j] = ((df[i][j]- df[i][j-1])/df[i][j-1]) * 100
+        df_daily_return.loc[0, i] = 0
+ 
+    return df_daily_return
+stocks_daily_return = daily_return_estimator(stocks_df)
+stocks_daily_return.head(5)
+
+stocks_daily_return.boxplot(figsize=(12, 10), grid=False)
+plt.title("Daily returns of the stocks")
+plt.show()
 
 class CAPM:
 
@@ -73,8 +125,10 @@ class CAPM:
 
 
 if __name__ == '__main__':
-    capm = CAPM(['RELIANCE.NS', '^NSEI'], '2010-01-01', '2020-01-01')
+    a = 'ASIANPAINT.NS'
+    capm = CAPM([a, '^NSEI'], '2010-01-01', '2020-01-01')
     capm.initialize()
     capm.calculate_beta()
     capm.regression()
+
 
