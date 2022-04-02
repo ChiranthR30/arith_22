@@ -7,15 +7,19 @@ import seaborn as sns
 from scipy import stats
 import plotly.figure_factory as ff
 import plotly.graph_objects as go
+import io
 
-RISK_FREE_RATE = 0.05
-
+cds_spread= 6.16/100
+recovery_rate=40/100
+RISK_FREE_RATE = cds_spread/(1-recovery_rate)
+#RISK_FREE_RATE = 0.05
 MONTHS_IN_YEAR = 12
 
-ASIANPAINT = pd.read_csv("D:\VScode\Python\ARTH hack\\asianpaints.csv")
-HDFC_bank = pd.read_csv("D:\VScode\Python\ARTH hack\\HDFC.csv")
-prakash = pd.read_csv("D:\VScode\Python\ARTH hack\\prakash.csv")
-nifty = pd.read_csv("D:\VScode\Python\ARTH hack\\^NSEI.csv")
+
+ASIANPAINT = pd.read_csv(io.BytesIO(file1['ASIANPAINT.NS.csv']))
+HDFC_bank = pd.read_csv(io.BytesIO(file2['HDB.csv']))
+prakash = pd.read_csv(io.BytesIO(file3['PRAKASH.NS.csv']))
+nifty = pd.read_csv(io.BytesIO(file4['^NSEI.csv']))
 ASIANPAINT = ASIANPAINT[["Date", "Adj Close"]]
 HDFC_bank = HDFC_bank[["Date", "Adj Close"]]
 prakash = prakash[["Date", "Adj Close"]]
@@ -130,5 +134,3 @@ if __name__ == '__main__':
     capm.initialize()
     capm.calculate_beta()
     capm.regression()
-
-
